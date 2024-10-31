@@ -19,17 +19,24 @@ export class PdfExtractorService {
     this.appConfig = this.configService.get<ConfigType<typeof AppConfig>>(CONFIG_APP);
   }
 
-  async extract(file: PdfExtractorDto['file']): Promise<string> {
+  // Separate function for Document Analysis
+  async analyzeDocument(file: PdfExtractorDto['file']): Promise<AnalyzeResult> {
     try {
-      // Use Document Analysis Client to analyze the PDF
       const blob = new Blob([file.buffer], { type: file.mimetype });
       const poller = await this.documentIntelligenceClient.beginAnalyzeDocument(
         'prebuilt-read',
         await blob.arrayBuffer(),
       );
-      const documentIntelligenceResponse: AnalyzeResult = await poller.pollUntilDone();
+      return await poller.pollUntilDone();
+    } catch (error) {
+      this.logger.error('Failed to analyze document', error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
 
-      // Send extracted data to OpenAI API
+  // Separate function for GPT Completion
+  async completeWithGPT(documentIntelligenceResponse: AnalyzeResult): Promise<string> {
+    try {
       const gptResponse = await this.openAIClient.chat.completions.create({
         model: 'gpt-4o',
         messages: [
@@ -39,8 +46,18 @@ export class PdfExtractorService {
         temperature: 0,
         max_tokens: 4096,
       });
-
       return gptResponse.choices[0].message.content;
+    } catch (error) {
+      this.logger.error('Failed to complete with GPT', error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
+
+  // Main function to handle extraction by calling the smaller functions
+  async extract(file: PdfExtractorDto['file']): Promise<string> {
+    try {
+      const analysisResult = await this.analyzeDocument(file);
+      return await this.completeWithGPT(analysisResult);
     } catch (error) {
       this.logger.error('Failed to extract data from PDF', error instanceof Error ? error.message : error);
       throw error;
