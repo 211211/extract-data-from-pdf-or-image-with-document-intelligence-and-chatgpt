@@ -1,6 +1,6 @@
 import { AzureKeyCredential, DocumentAnalysisClient } from '@azure/ai-form-recognizer';
 
-export const DocumentIntelligenceInstance = () => {
+export const DocumentIntelligenceInstance = (): DocumentAnalysisClient => {
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 

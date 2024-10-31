@@ -1,5 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
+import { DocumentAnalysisClient, AnalyzeResult } from '@azure/ai-form-recognizer';
+import OpenAI from 'openai';
 import AppConfig, { CONFIG_APP } from '../../../config/app';
 import { PdfExtractorDto } from './dto/pdf-extractor.dto';
 import { textPrompt } from './prompt';
@@ -11,23 +13,23 @@ export class PdfExtractorService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject('OpenAIClient') private readonly openAIClient: any,
-    @Inject('DocumentIntelligenceClient') private readonly documentIntelligenceClient: any,
+    @Inject('OpenAIClient') private readonly openAIClient: OpenAI,
+    @Inject('DocumentIntelligenceClient') private readonly documentIntelligenceClient: DocumentAnalysisClient,
   ) {
     this.appConfig = this.configService.get<ConfigType<typeof AppConfig>>(CONFIG_APP);
   }
 
-  async extract(file: PdfExtractorDto['file']) {
+  async extract(file: PdfExtractorDto['file']): Promise<string> {
     try {
-      // Process file using Document Intelligence client directly
+      // Use Document Analysis Client to analyze the PDF
       const blob = new Blob([file.buffer], { type: file.mimetype });
       const poller = await this.documentIntelligenceClient.beginAnalyzeDocument(
         'prebuilt-read',
         await blob.arrayBuffer(),
       );
-      const documentIntelligenceResponse = await poller.pollUntilDone();
+      const documentIntelligenceResponse: AnalyzeResult = await poller.pollUntilDone();
 
-      // Use injected OpenAI client for response generation
+      // Send extracted data to OpenAI API
       const gptResponse = await this.openAIClient.chat.completions.create({
         model: 'gpt-4o',
         messages: [
