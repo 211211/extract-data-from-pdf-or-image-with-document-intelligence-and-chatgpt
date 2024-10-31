@@ -1,11 +1,7 @@
-import AppConfig, { CONFIG_APP } from '../../../config/app';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
-import { Injectable, Logger } from '@nestjs/common';
-
-import { HttpService } from '@nestjs/axios';
-import { OpenAIInstance } from './openai.service';
+import AppConfig, { CONFIG_APP } from '../../../config/app';
 import { PdfExtractorDto } from './dto/pdf-extractor.dto';
-import { loadFile } from './document-intelligence.service';
 import { textPrompt } from './prompt';
 
 @Injectable()
@@ -13,46 +9,38 @@ export class PdfExtractorService {
   private readonly logger = new Logger(PdfExtractorService.name);
   private appConfig: ConfigType<typeof AppConfig>;
 
-  constructor(private readonly configService: ConfigService, private readonly httpService: HttpService) {
-    this.appConfig = configService.get<ConfigType<typeof AppConfig>>(CONFIG_APP);
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('OpenAIClient') private readonly openAIClient: any,
+    @Inject('DocumentIntelligenceClient') private readonly documentIntelligenceClient: any,
+  ) {
+    this.appConfig = this.configService.get<ConfigType<typeof AppConfig>>(CONFIG_APP);
   }
 
   async extract(file: PdfExtractorDto['file']) {
     try {
-      const documentIntelligenceResponse = await loadFile(file);
-      console.log({ documentIntelligenceResponse });
-      try {
-        // Make the POST request to OpenAI API
-        const client = OpenAIInstance();
-        const gptResponse = await client.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: textPrompt,
-            },
-            {
-              role: 'user',
-              content: JSON.stringify(documentIntelligenceResponse),
-            },
-          ],
-          temperature: 0,
-          max_tokens: 4096,
-        });
+      // Process file using Document Intelligence client directly
+      const blob = new Blob([file.buffer], { type: file.mimetype });
+      const poller = await this.documentIntelligenceClient.beginAnalyzeDocument(
+        'prebuilt-read',
+        await blob.arrayBuffer(),
+      );
+      const documentIntelligenceResponse = await poller.pollUntilDone();
 
-        console.log({ gptResponse: gptResponse.choices[0].message.content });
-        // return the content from the API response
-        return gptResponse.choices[0].message.content;
-      } catch (error) {
-        console.error('Error while calling OpenAI API:', error);
-        throw error;
-      }
+      // Use injected OpenAI client for response generation
+      const gptResponse = await this.openAIClient.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: textPrompt },
+          { role: 'user', content: JSON.stringify(documentIntelligenceResponse) },
+        ],
+        temperature: 0,
+        max_tokens: 4096,
+      });
+
+      return gptResponse.choices[0].message.content;
     } catch (error) {
-      if (error instanceof Error) {
-        this.logger.error(`RestError: ${error.message}`, error.message);
-      } else {
-        this.logger.error('Failed to extract data from PDF', error);
-      }
+      this.logger.error('Failed to extract data from PDF', error instanceof Error ? error.message : error);
       throw error;
     }
   }
