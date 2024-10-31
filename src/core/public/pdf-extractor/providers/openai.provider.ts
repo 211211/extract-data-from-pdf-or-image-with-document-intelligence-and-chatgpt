@@ -1,7 +1,13 @@
 import OpenAI from 'openai';
 
-export const OpenAIInstance = (): OpenAI => {
+export const OpenAIInstance = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('OpenAI API key environment variable is missing');
+  }
+
   return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: apiKey,
   });
 };
