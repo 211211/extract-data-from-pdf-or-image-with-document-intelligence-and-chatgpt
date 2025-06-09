@@ -1,6 +1,5 @@
-import { Controller, HttpStatus, Logger, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Controller, Logger, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
-import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import AppConfig, { CONFIG_APP } from '../../../config/app';
 import { PdfExtractorService } from './pdf-extractor.service';
@@ -22,23 +21,18 @@ export class PdfExtractorController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  async create(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
-    try {
-      if (!file) {
-        throw new Error('File not provided');
-      }
+  async create(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File not provided');
+    }
 
+    try {
       const data = await this.pdfExtractorService.extract(file);
-      return res.status(HttpStatus.OK).json(data);
+      const jsonData = typeof data === 'string' ? JSON.parse(data) : data;
+      return jsonData;
     } catch (error) {
       this.logger.error('Extraction failed', error);
-
-      return res.status(HttpStatus.BAD_REQUEST).json(
-        error.response?.data || {
-          code: 400,
-          message: 'Bad request!',
-        },
-      );
+      throw new BadRequestException(error.response?.data || 'Bad request!');
     }
   }
 }

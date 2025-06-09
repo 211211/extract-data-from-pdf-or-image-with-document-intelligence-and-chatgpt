@@ -1,21 +1,23 @@
-import { DocumentIntelligenceInstance, OpenAIInstance } from './providers';
+import { DocumentIntelligenceInstance, Grok3Instance } from './providers';
 
+import { CompletionService } from './services/completion.interface';
 import { DocumentAnalysisService } from './services/document-analysis.service';
-import { GptCompletionService } from './services/gpt-completion.service';
 import { Module } from '@nestjs/common';
 import { PdfExtractorController } from './pdf-extractor.controller';
 import { PdfExtractorService } from './pdf-extractor.service';
 
 @Module({
+  imports: [],
   controllers: [PdfExtractorController],
   providers: [
     PdfExtractorService,
     DocumentAnalysisService,
-    GptCompletionService,
-    { provide: 'DocumentIntelligenceClient', useFactory: DocumentIntelligenceInstance }, // Register DocumentIntelligenceClient
-    { provide: 'OpenAIClient', useFactory: OpenAIInstance }, // Register OpenAIClient
+    CompletionService,
+    { provide: 'DocumentIntelligenceClient', useFactory: DocumentIntelligenceInstance },
+    { provide: 'ModelClient', useFactory: Grok3Instance },
     { provide: 'DocumentAnalysisService', useClass: DocumentAnalysisService },
-    { provide: 'GptCompletionService', useClass: GptCompletionService },
+    { provide: 'CompletionService', useClass: CompletionService },
   ],
+  exports: [PdfExtractorService],
 })
 export class PdfExtractorModule {}

@@ -1,7 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { IDocumentAnalysisService } from './interfaces/document-analysis.interface';
-import { IGptCompletionService } from './interfaces/gpt-completion.interface';
 import { PdfExtractorDto } from './dto/pdf-extractor.dto';
+import { ICompletionService } from './interfaces/completion.interface';
 
 @Injectable()
 export class PdfExtractorService {
@@ -9,16 +9,11 @@ export class PdfExtractorService {
 
   constructor(
     @Inject('DocumentAnalysisService') private readonly documentAnalysisService: IDocumentAnalysisService,
-    @Inject('GptCompletionService') private readonly gptCompletionService: IGptCompletionService,
+    @Inject('CompletionService') private readonly completionService: ICompletionService,
   ) {}
 
   async extract(file: PdfExtractorDto['file']): Promise<string> {
-    try {
-      const analysisResult = await this.documentAnalysisService.analyzeDocument(file);
-      return await this.gptCompletionService.completeWithGPT(analysisResult);
-    } catch (error) {
-      this.logger.error('Failed to extract data from PDF', error instanceof Error ? error.message : error);
-      throw error;
-    }
+    const analysisResult = await this.documentAnalysisService.analyzeDocument(file);
+    return await this.completionService.chatCompletion(analysisResult);
   }
 }

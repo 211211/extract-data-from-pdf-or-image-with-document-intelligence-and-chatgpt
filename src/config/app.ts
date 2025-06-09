@@ -11,7 +11,4 @@ export default registerAs(CONFIG_APP, () => ({
   OPENAI_API_KEY: String(process.env.OPENAI_API_KEY),
   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: String(process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT),
   AZURE_DOCUMENT_INTELLIGENCE_KEY: String(process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY),
-  aws: {
-    region: 'a',
-  },
 }));

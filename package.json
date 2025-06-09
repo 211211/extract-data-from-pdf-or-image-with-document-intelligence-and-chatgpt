@@ -18,10 +18,17 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed": "ts-node src/scripts/seed-index.ts",
+    "clear-index": "ts-node src/scripts/clear-index.ts"
   },
   "dependencies": {
+    "@azure-rest/ai-inference": "^1.0.0-beta.6",
     "@azure/ai-form-recognizer": "^5.0.0",
+    "@azure/core-auth": "^1.9.0",
+    "@azure/search-documents": "^12.1.0",
+    "@langchain/core": "^0.3.57",
+    "@langchain/textsplitters": "^0.1.0",
     "@nestjs/axios": "^0.1.0",
     "@nestjs/cli": "^8.0.0",
     "@nestjs/common": "^10.4.1",
@@ -36,6 +43,7 @@
     "form-data": "^4.0.0",
     "moment": "^2.29.4",
     "mongoose": "^6.7.7",
+    "nanoid": "^5.1.5",
     "openai": "^4.69.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
