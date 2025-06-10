@@ -28,7 +28,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ICompletionService } from '../interfaces/completion.interface';
 import { textPrompt } from '../prompt';
-import { ModelClient } from '@azure-rest/ai-inference';
+import { isUnexpected, ModelClient } from '@azure-rest/ai-inference';
 
 @Injectable()
 export class CompletionService implements ICompletionService {
@@ -49,9 +49,9 @@ export class CompletionService implements ICompletionService {
         },
       });
 
-      if (response.status !== '200') {
-        this.logger.error(`Grok API error: ${response.status}`);
-        throw new Error(`Grok API returned status ${response.status}`);
+      if (isUnexpected(response)) {
+        this.logger.error(response.body.error.message || 'Unexpected error from Grok API');
+        throw response.body.error;
       }
 
       // Type guard to ensure response.body has 'choices'
