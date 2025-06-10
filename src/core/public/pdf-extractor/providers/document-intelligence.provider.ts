@@ -1,6 +1,6 @@
-import { AzureKeyCredential, DocumentAnalysisClient } from '@azure/ai-form-recognizer';
+import DIClient, { DocumentIntelligenceClient } from '@azure-rest/ai-document-intelligence';
 
-export const DocumentIntelligenceInstance = (): DocumentAnalysisClient => {
+export const DocumentIntelligenceInstance = (): DocumentIntelligenceClient => {
   const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
   const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
 
@@ -8,5 +8,6 @@ export const DocumentIntelligenceInstance = (): DocumentAnalysisClient => {
     throw new Error('Document Intelligence environment variables are missing');
   }
 
-  return new DocumentAnalysisClient(endpoint, new AzureKeyCredential(key));
+  // Return a new instance of DocumentIntelligenceClient with the endpoint and credentials
+  return DIClient(endpoint, { key });
 };

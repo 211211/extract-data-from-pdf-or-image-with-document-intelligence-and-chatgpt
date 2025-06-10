@@ -1,6 +1,6 @@
-import { AnalyzeResult } from '@azure/ai-form-recognizer';
+import { AnalyzeOperationOutput } from '@azure-rest/ai-document-intelligence';
 import { PdfExtractorDto } from '../dto/pdf-extractor.dto';
 
 export interface IDocumentAnalysisService {
-  analyzeDocument(file: PdfExtractorDto['file']): Promise<AnalyzeResult>;
+  analyzeDocument(file: PdfExtractorDto['file']): Promise<AnalyzeOperationOutput>;
 }

@@ -1,3 +1,4 @@
+import { AnalyzeOperationOutput, getLongRunningPoller, isUnexpected } from '@azure-rest/ai-document-intelligence';
 import { AzureCogDocumentIndex, embedDocuments, ensureIndexIsCreated } from './azure-cog-vector-store';
 
 import { AzureAISearchInstance } from './ai-search';
@@ -18,7 +19,7 @@ export const hashValue = (value: string): string => {
   return hash.digest('hex');
 };
 
-export const userHashedId = async (email): Promise<string> => {
+export const userHashedId = async (email: string): Promise<string> => {
   return hashValue(email);
 };
 
@@ -36,20 +37,37 @@ const LoadFile = async (formData: FormData) => {
   try {
     const file: File | null = formData.get('file') as unknown as File;
 
-    const fileSize = MAX_UPLOAD_DOCUMENT_SIZE;
-
-    if (file && file.size < fileSize) {
+    if (file && file.size < MAX_UPLOAD_DOCUMENT_SIZE) {
       const client = DocumentIntelligenceInstance();
 
-      const blob = new Blob([file], { type: file.type });
+      // Convert the file to a Base64 string
+      const arrayBuffer = await file.arrayBuffer();
+      const base64Source = Buffer.from(arrayBuffer).toString('base64');
 
-      const poller = await client.beginAnalyzeDocument('prebuilt-read', await blob.arrayBuffer());
-      const { paragraphs } = await poller.pollUntilDone();
+      // Send the request to analyze the document
+      const initialResponse = await client.path('/documentModels/{modelId}:analyze', 'prebuilt-read').post({
+        contentType: 'application/json',
+        body: {
+          base64Source,
+        },
+        queryParameters: { outputContentFormat: 'markdown' },
+      });
+
+      // Check if the response is unexpected (error)
+      if (isUnexpected(initialResponse)) {
+        const errorMessage = initialResponse.body.error?.message || JSON.stringify(initialResponse.body.error, null, 2);
+        throw new Error(`Failed to start analysis: ${errorMessage}`);
+      }
+
+      // Use the poller to handle the long-running operation
+      const poller = getLongRunningPoller(client, initialResponse);
+      const result = (await poller.pollUntilDone()).body as AnalyzeOperationOutput;
 
       const docs: Array<string> = [];
 
-      if (paragraphs) {
-        for (const paragraph of paragraphs) {
+      // Extract content from paragraphs in the analysis result
+      if (result.analyzeResult?.paragraphs) {
+        for (const paragraph of result.analyzeResult.paragraphs) {
           docs.push(paragraph.content);
         }
       }
@@ -60,16 +78,7 @@ const LoadFile = async (formData: FormData) => {
     }
   } catch (e) {
     const error = e as any;
-
-    if (error.details) {
-      if (error.details.length > 0) {
-        throw new Error(error.details[0].message);
-      } else {
-        throw new Error(error.details.error.innererror.message);
-      }
-    }
-
-    throw new Error(error.message);
+    throw new Error(error.message || 'Failed to load and analyze the document.');
   }
 };
 
