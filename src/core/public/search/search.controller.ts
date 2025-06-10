@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { SearchService } from './search.service';
 import { IndexerService } from './indexer.service';
 import { DocumentDto } from './dto/document.dto';
@@ -11,6 +11,7 @@ export class SearchController {
 
   @Get('semantic')
   @ApiOperation({ summary: 'Semantic search' })
+  @ApiResponse({ status: 200, description: 'Semantic search results', type: [DocumentDto] })
   @ApiQuery({ name: 'query', required: true })
   @ApiQuery({ name: 'top', required: false, type: Number })
   @ApiQuery({ name: 'filter', required: false })
@@ -24,6 +25,7 @@ export class SearchController {
 
   @Get('vector')
   @ApiOperation({ summary: 'Vector search' })
+  @ApiResponse({ status: 200, description: 'Vector search results', type: [DocumentDto] })
   @ApiQuery({ name: 'query', required: true })
   @ApiQuery({ name: 'k', required: false, type: Number })
   @ApiQuery({ name: 'filter', required: false })
@@ -37,6 +39,7 @@ export class SearchController {
 
   @Get('hybrid')
   @ApiOperation({ summary: 'Hybrid search' })
+  @ApiResponse({ status: 200, description: 'Hybrid search results', type: [DocumentDto] })
   @ApiQuery({ name: 'query', required: true })
   @ApiQuery({ name: 'top', required: false, type: Number })
   @ApiQuery({ name: 'filter', required: false })
@@ -52,6 +55,7 @@ export class SearchController {
    */
   @Get('simple')
   @ApiOperation({ summary: 'Simple term/keyword search' })
+  @ApiResponse({ status: 200, description: 'Keyword search results', type: [DocumentDto] })
   @ApiQuery({ name: 'query', required: false })
   @ApiQuery({ name: 'filter', required: false })
   async simple(@Query('query') query?: string, @Query('filter') filter?: string): Promise<DocumentDto[]> {
@@ -62,6 +66,11 @@ export class SearchController {
    */
   @Get('seed')
   @ApiOperation({ summary: 'Seed sample documents into the index' })
+  @ApiResponse({
+    status: 200,
+    description: 'Seed completed',
+    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
+  })
   async seed(): Promise<{ success: true }> {
     await this.searchService.seed();
     return { success: true };
@@ -71,6 +80,12 @@ export class SearchController {
    */
   @Post('index')
   @ApiOperation({ summary: 'Index provided documents' })
+  @ApiBody({ description: 'Array of documents to index', type: [DocumentDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Indexing completed',
+    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
+  })
   async index(@Body() documents: DocumentDto[]): Promise<{ success: true }> {
     await this.searchService.index(documents as any);
     return { success: true };
@@ -80,6 +95,14 @@ export class SearchController {
    */
   @Post('index-folder')
   @ApiOperation({ summary: 'Extract and index all PDFs in a folder' })
+  @ApiBody({
+    description: 'Folder path and metadata',
+    schema: {
+      type: 'object',
+      properties: { folderPath: { type: 'string' }, user: { type: 'string' }, chatThreadId: { type: 'string' } },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Indexed documents from folder', type: [DocumentDto] })
   async indexFolder(
     @Body('folderPath') folderPath: string,
     @Body('user') user: string,
@@ -93,6 +116,11 @@ export class SearchController {
    */
   @Get('clear')
   @ApiOperation({ summary: 'Clear all documents from the specified index' })
+  @ApiResponse({
+    status: 200,
+    description: 'Clear index completed',
+    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
+  })
   @ApiQuery({
     name: 'indexName',
     required: false,
@@ -107,6 +135,7 @@ export class SearchController {
    */
   @Get('documents')
   @ApiOperation({ summary: 'Retrieve all documents from the specified index' })
+  @ApiResponse({ status: 200, description: 'Retrieved documents', type: [DocumentDto] })
   @ApiQuery({
     name: 'indexName',
     required: false,
