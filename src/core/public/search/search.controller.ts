@@ -144,4 +144,19 @@ export class SearchController {
   async getAllDocuments(@Query('indexName') indexName?: string): Promise<DocumentDto[]> {
     return this.searchService.getAllDocuments(indexName);
   }
+  /**
+   * Generate embedding vector for a given query string.
+   */
+  @Get('embed')
+  @ApiOperation({ summary: 'Generate embedding for query' })
+  @ApiResponse({
+    status: 200,
+    description: 'Embedding vector generated',
+    schema: { type: 'object', properties: { embedding: { type: 'array', items: { type: 'number' } } } },
+  })
+  @ApiQuery({ name: 'query', required: true, description: 'Input text to embed' })
+  async embed(@Query('query') query: string): Promise<{ embedding: number[] }> {
+    const embedding = await this.searchService.embed(query);
+    return { embedding };
+  }
 }

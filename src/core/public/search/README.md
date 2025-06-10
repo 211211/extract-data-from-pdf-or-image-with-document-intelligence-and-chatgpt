@@ -10,7 +10,7 @@ This module exposes REST APIs for semantic, vector, hybrid, and keyword-based se
 The service requires the following environment variables configured (in `.env`):
 
 ```dotenv
-AZURE_SEARCH_SERVICE_NAME=<your-search-service-name>
+AZURE_SEARCH_NAME=<your-search-service-name>
 AZURE_SEARCH_API_KEY=<your-search-api-key>
 AZURE_SEARCH_INDEX_NAME=<your-search-index-name>
 ```  

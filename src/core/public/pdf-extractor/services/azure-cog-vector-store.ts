@@ -82,10 +82,36 @@ export const embedDocuments = async (documents: Array<AzureCogDocumentIndex>) =>
       }
     });
   } catch (e) {
-    console.log(e);
     const error = e as any;
-    throw new Error(`${e} with code ${error.status}`);
+    throw error;
   }
+};
+
+/**
+ * Generate embedding vector for a single query string using OpenAI embeddings.
+ * @param query The input text to embed.
+ * @returns A promise resolving to the embedding vector.
+ */
+export const embedQuery = async (query: string): Promise<number[]> => {
+  const openai = AzureOpenAIEmbeddingInstance();
+  const response = await openai.path('/embeddings').post({
+    body: {
+      input: [query],
+      model: process.env.AZURE_OPENAI_API_EMBEDDINGS_DEPLOYMENT_NAME!,
+    },
+  });
+  if (isUnexpected(response)) {
+    throw response.body.error;
+  }
+  const data = response.body.data;
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('Embedding response missing data');
+  }
+  const emb = data[0].embedding;
+  if (!Array.isArray(emb)) {
+    throw new Error('Invalid embedding format');
+  }
+  return emb;
 };
 
 const baseIndexUrl = (): string => {

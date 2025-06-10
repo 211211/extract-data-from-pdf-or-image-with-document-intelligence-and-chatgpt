@@ -9,7 +9,7 @@ This folder contains CLI scripts to manage the Azure Cognitive Search index outs
 ## Prerequisites
 - Node.js and `ts-node` are installed (project uses TypeScript).  
 - Environment variables configured in `.env` (see root `README.md`):
-  - `AZURE_SEARCH_SERVICE_NAME`
+  - `AZURE_SEARCH_NAME`
   - `AZURE_SEARCH_API_KEY`
   - `AZURE_SEARCH_INDEX_NAME` (for clear-index)
 - The NestJS application dependencies are installed (`yarn install`).

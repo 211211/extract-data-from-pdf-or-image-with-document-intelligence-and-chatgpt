@@ -7,6 +7,7 @@ import {
   simpleSearch as cogSimpleSearch,
   vectorSearch as cogVectorSearch,
   resetIndex,
+  embedQuery,
 } from '../pdf-extractor/services/azure-cog-vector-store';
 
 import { Injectable } from '@nestjs/common';
@@ -31,6 +32,12 @@ export class SearchService {
    */
   async simpleSearch(query?: string, filter?: string): Promise<AzureCogDocumentIndex[]> {
     return cogSimpleSearch(query, filter);
+  }
+  /**
+   * Generate embedding vector for a query string.
+   */
+  async embed(query: string): Promise<number[]> {
+    return embedQuery(query);
   }
 
   /**
