@@ -1,9 +1,20 @@
-import { BadRequestException, Controller, Logger, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import AppConfig, { CONFIG_APP } from '../../../config/app';
 import { PdfExtractorService } from './pdf-extractor.service';
 import { ApiTags, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
+
+import { DocumentIntelligenceClient, isUnexpected, paginate } from '@azure-rest/ai-document-intelligence';
 
 @Controller('pdf-extractor')
 @ApiTags('pdf-extractor')
@@ -14,6 +25,8 @@ export class PdfExtractorController {
   constructor(
     private readonly configService: ConfigService,
     private readonly pdfExtractorService: PdfExtractorService,
+    @Inject('DocumentIntelligenceClient')
+    private readonly documentIntelligenceClient: DocumentIntelligenceClient,
   ) {
     this.appConfig = configService.get<ConfigType<typeof AppConfig>>(CONFIG_APP);
   }
@@ -110,6 +123,38 @@ export class PdfExtractorController {
         parseError instanceof Error ? parseError.message : String(parseError),
       );
       return data; // Return as-is if JSON parsing fails
+    }
+  }
+
+  /* -------------------------------------------------------------- */
+  /*               AZURE DOCUMENT INTELLIGENCE MODELS               */
+  /* -------------------------------------------------------------- */
+
+  @Get('models')
+  @ApiOperation({ summary: 'List available Azure Document Intelligence models' })
+  @ApiResponse({ status: 200, description: 'Successfully retrieved list of models' })
+  async listModels() {
+    try {
+      const response = await this.documentIntelligenceClient.path('/documentModels').get();
+
+      if (isUnexpected(response)) {
+        throw new Error(response.body.error?.message || 'Failed to fetch models');
+      }
+
+      const models: Array<{ modelId: string }> = [];
+
+      // Paginate through results (supports >1 page)
+      for await (const model of paginate(this.documentIntelligenceClient, response)) {
+        models.push({ modelId: model.modelId });
+      }
+
+      return models;
+    } catch (error) {
+      this.logger.error(
+        'Failed to list Document Intelligence models',
+        error instanceof Error ? error.message : String(error),
+      );
+      throw new BadRequestException('Unable to retrieve models list');
     }
   }
 }
