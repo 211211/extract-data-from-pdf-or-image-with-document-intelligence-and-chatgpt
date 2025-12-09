@@ -11,12 +11,39 @@ interface Message {
 }
 
 /**
+ * Document from search results
+ */
+export interface SearchDocument {
+  id: string;
+  title: string;
+  content: string;
+  source?: string;
+  score?: number;
+}
+
+/**
+ * Citation for response attribution
+ */
+export interface Citation {
+  title: string;
+  source?: string;
+  snippet?: string;
+}
+
+/**
  * Research findings structure
+ * Supports both legacy research flow and new parallel search flow
  */
 export interface ResearchFindings {
-  findings: string[];
-  sources: string[];
-  confidence: number;
+  // Legacy fields (from ResearcherAgent)
+  findings?: string[];
+  sources?: string[];
+  confidence?: number;
+
+  // Extended fields (from ParallelSearchAgent + ResultRankerAgent)
+  summary?: string;
+  documents?: SearchDocument[];
+  citations?: Citation[];
 }
 
 /**
@@ -118,6 +145,7 @@ export class ResearcherAgent extends BaseAgent implements IHandoffAgent {
         temperature: 0.5,
         maxTokens: 2048,
         jsonMode: true,
+        timeout: 30000, // 30 second timeout for research
       });
 
       this._findings = this.parseFindings(findingsJson);
@@ -154,7 +182,7 @@ Be thorough but concise. Focus on key facts and insights.`;
       return {
         findings: parsed.findings || ['Information gathered'],
         sources: parsed.sources || [],
-        confidence: parsed.confidence || 0.7,
+        confidence: parsed.confidence ?? 0.7,
       };
     } catch {
       return {

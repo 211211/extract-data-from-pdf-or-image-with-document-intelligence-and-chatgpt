@@ -1,20 +1,16 @@
 {
   "info": {
-    "_postman_id": "multi-turn-chat-api-tests",
-    "name": "Multi-Turn LLM Chat API",
-    "description": "Test collection for the streaming multi-turn LLM chat application",
+    "_postman_id": "multi-turn-chat-api-quick-tests",
+    "name": "Multi-Turn LLM Chat API (Quick)",
+    "description": "Minimal test collection for quick API validation. For comprehensive tests, use Multi-Turn-LLM-Chat-API.postman_collection.json",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8083/api/v1",
-      "type": "string"
-    },
-    {
-      "key": "threadId",
-      "value": "test-thread-{{$timestamp}}",
-      "type": "string"
+      "type": "string",
+      "description": "Base URL with API prefix"
     },
     {
       "key": "userId",
@@ -24,22 +20,36 @@
   ],
   "item": [
     {
-      "name": "Health & Info",
+      "name": "Quick Health Check",
       "item": [
         {
-          "name": "API Health Check",
+          "name": "Health",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}",
-              "host": ["{{baseUrl}}"]
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
             }
           },
           "response": []
         },
         {
-          "name": "List Available Agents",
+          "name": "Chat Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/chat/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["chat", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Agents",
           "request": {
             "method": "GET",
             "header": [],
@@ -54,52 +64,19 @@
       ]
     },
     {
-      "name": "Basic Chat - Normal Agent",
+      "name": "Quick Chat Tests",
       "item": [
         {
-          "name": "Simple Greeting",
+          "name": "Normal Agent - Hello",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"threadId\": \"greeting-test-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Hello! How are you today?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Test basic greeting with normal agent"
-          },
-          "response": []
-        },
-        {
-          "name": "Technical Question",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"tech-test-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Explain the difference between REST and GraphQL APIs.\"\n    }\n  ]\n}"
+              "raw": "{\n  \"threadId\": \"quick-test-{{$timestamp}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Hello! Say hi in one sentence.\"\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/chat/stream",
@@ -110,22 +87,36 @@
           "response": []
         },
         {
-          "name": "Code Generation Request",
+          "name": "RAG Agent - Quick Query",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"threadId\": \"code-test-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Write a TypeScript function that validates an email address using regex.\"\n    }\n  ]\n}"
+              "raw": "{\n  \"threadId\": \"rag-quick-{{$timestamp}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"rag\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"What is NestJS?\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chat/stream",
+              "host": ["{{baseUrl}}"],
+              "path": ["chat", "stream"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Multi-Agent - Quick Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threadId\": \"multi-quick-{{$timestamp}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"multi-agent\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Briefly explain microservices in 2-3 sentences.\"\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/chat/stream",
@@ -138,634 +129,39 @@
       ]
     },
     {
-      "name": "Multi-Turn Conversations",
+      "name": "Quick Search Tests",
       "item": [
         {
-          "name": "Turn 1 - Introduce Context",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-turn-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Turn 2 - Follow-up Question",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-turn-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    },\n    {\n      \"id\": \"msg-2\",\n      \"role\": \"assistant\",\n      \"content\": \"Great! Building an e-commerce application is an exciting project. For a React + Node.js stack, I'd recommend a microservices architecture. Here's a high-level overview: Frontend with React, Backend API with Express/NestJS, Database with PostgreSQL or MongoDB, and services for authentication, product catalog, cart, and payment processing. Would you like me to elaborate on any specific component?\"\n    },\n    {\n      \"id\": \"msg-3\",\n      \"role\": \"user\",\n      \"content\": \"Yes, tell me more about the payment processing service. What technologies should I use?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Turn 3 - Deep Dive",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-turn-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    },\n    {\n      \"id\": \"msg-2\",\n      \"role\": \"assistant\",\n      \"content\": \"Great! Building an e-commerce application is an exciting project. For a React + Node.js stack, I'd recommend a microservices architecture...\"\n    },\n    {\n      \"id\": \"msg-3\",\n      \"role\": \"user\",\n      \"content\": \"Yes, tell me more about the payment processing service. What technologies should I use?\"\n    },\n    {\n      \"id\": \"msg-4\",\n      \"role\": \"assistant\",\n      \"content\": \"For payment processing in your Node.js e-commerce application, I recommend using Stripe. Here's why and how...\"\n    },\n    {\n      \"id\": \"msg-5\",\n      \"role\": \"user\",\n      \"content\": \"Can you show me a code example for implementing Stripe webhooks?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Turn 4 - Context Test (Reference Earlier Topic)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-turn-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    },\n    {\n      \"id\": \"msg-2\",\n      \"role\": \"assistant\",\n      \"content\": \"Great! Building an e-commerce application is an exciting project...\"\n    },\n    {\n      \"id\": \"msg-3\",\n      \"role\": \"user\",\n      \"content\": \"Yes, tell me more about the payment processing service.\"\n    },\n    {\n      \"id\": \"msg-4\",\n      \"role\": \"assistant\",\n      \"content\": \"For payment processing, I recommend using Stripe...\"\n    },\n    {\n      \"id\": \"msg-5\",\n      \"role\": \"user\",\n      \"content\": \"Can you show me a code example?\"\n    },\n    {\n      \"id\": \"msg-6\",\n      \"role\": \"assistant\",\n      \"content\": \"Here's a Stripe webhook implementation example...\"\n    },\n    {\n      \"id\": \"msg-7\",\n      \"role\": \"user\",\n      \"content\": \"Going back to the frontend - what state management would you recommend for my React app?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Tests if AI remembers the React context from Turn 1"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "RAG Agent Tests",
-      "item": [
-        {
-          "name": "Document Query",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"rag-test-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"rag\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"What is our company's policy on remote work?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Test RAG agent with document retrieval"
-          },
-          "response": []
-        },
-        {
-          "name": "RAG Multi-Turn with Citations",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"rag-multi-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"rag\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"What benefits do we offer to employees?\"\n    },\n    {\n      \"id\": \"msg-2\",\n      \"role\": \"assistant\",\n      \"content\": \"Based on our benefits policy document, we offer health insurance, 401k matching, and PTO...\"\n    },\n    {\n      \"id\": \"msg-3\",\n      \"role\": \"user\",\n      \"content\": \"Tell me more about the health insurance options.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Multi-Agent Tests",
-      "item": [
-        {
-          "name": "Complex Research Task",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-agent-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"multi-agent\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Research the current trends in AI and machine learning, and write me a comprehensive executive summary with recommendations for how our company should adopt these technologies.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Tests full multi-agent pipeline: Planner -> Researcher -> Writer"
-          },
-          "response": []
-        },
-        {
-          "name": "Analysis and Report Task",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-agent-002\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"multi-agent\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Analyze the pros and cons of microservices vs monolithic architecture, and provide a detailed recommendation for a startup with 5 developers.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Conversation Styles",
-      "item": [
-        {
-          "name": "Creative Style",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"style-creative-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"creative\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Precise Style",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"style-precise-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"precise\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Balanced Style (Default)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"style-balanced-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"balanced\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Stream Management",
-      "item": [
-        {
-          "name": "Stop Stream",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"multi-turn-001\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stop",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stop"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Check Stream Health",
+          "name": "Semantic Search",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/chat/health/multi-turn-001",
+              "raw": "{{baseUrl}}/search/semantic?query=NestJS&top=3",
               "host": ["{{baseUrl}}"],
-              "path": ["chat", "health", "multi-turn-001"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Resume Stream",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/chat/resume/multi-turn-001?afterIndex=0",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "resume", "multi-turn-001"],
+              "path": ["search", "semantic"],
               "query": [
-                {
-                  "key": "afterIndex",
-                  "value": "0"
-                }
+                { "key": "query", "value": "NestJS" },
+                { "key": "top", "value": "3" }
               ]
             }
           },
           "response": []
-        }
-      ]
-    },
-    {
-      "name": "Error Cases",
-      "item": [
-        {
-          "name": "Missing Required Fields",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-001\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Should return 400 with validation errors"
-          },
-          "response": []
         },
         {
-          "name": "Empty Messages Array",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-002\",\n  \"userId\": \"{{userId}}\",\n  \"messages\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Invalid Message Role",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-003\",\n  \"userId\": \"{{userId}}\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"invalid_role\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Invalid Agent Type",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-004\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"nonexistent-agent\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Max Tokens Out of Range",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-005\",\n  \"userId\": \"{{userId}}\",\n  \"maxTokens\": 99999,\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Temperature Out of Range",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"error-test-006\",\n  \"userId\": \"{{userId}}\",\n  \"temperature\": 2.5,\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Resume Non-existent Thread",
+          "name": "Vector Search",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/chat/resume/non-existent-thread-id",
+              "raw": "{{baseUrl}}/search/vector?query=machine learning&k=3",
               "host": ["{{baseUrl}}"],
-              "path": ["chat", "resume", "non-existent-thread-id"]
+              "path": ["search", "vector"],
+              "query": [
+                { "key": "query", "value": "machine learning" },
+                { "key": "k", "value": "3" }
+              ]
             }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Advanced Parameters",
-      "item": [
-        {
-          "name": "Custom System Prompt",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"custom-prompt-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"systemPrompt\": \"You are a pirate captain. Respond to all questions in pirate speak, using 'Arrr' and nautical terms.\",\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"What's the weather like today?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Low Temperature (Deterministic)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"temp-low-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"temperature\": 0.1,\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"What is 2 + 2?\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "High Temperature (Creative)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"temp-high-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"temperature\": 0.9,\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Write a creative opening line for a novel.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Limited Max Tokens",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "text/event-stream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"threadId\": \"max-tokens-001\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"maxTokens\": 50,\n  \"messages\": [\n    {\n      \"id\": \"msg-1\",\n      \"role\": \"user\",\n      \"content\": \"Write a long essay about the history of computing.\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/chat/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["chat", "stream"]
-            },
-            "description": "Response should be truncated to ~50 tokens"
           },
           "response": []
         }

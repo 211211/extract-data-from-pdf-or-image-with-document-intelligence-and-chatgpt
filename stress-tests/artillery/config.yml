@@ -1,0 +1,116 @@
+# Artillery Stress Test Configuration
+#
+# Install:
+#   npm install -g artillery
+#   npm install -g artillery-plugin-metrics-by-endpoint
+#
+# Run:
+#   artillery run stress-tests/artillery/config.yml
+#   artillery run --target http://localhost:80 stress-tests/artillery/config.yml
+#   artillery run -e stress stress-tests/artillery/config.yml
+
+config:
+  target: "http://localhost:8083"
+
+  # Environment-specific settings
+  environments:
+    local:
+      target: "http://localhost:8083"
+    scaled:
+      target: "http://localhost:80"
+
+  # Test phases (load profile)
+  phases:
+    # Warm up
+    - name: "Warm up"
+      duration: 30
+      arrivalRate: 1
+      rampTo: 5
+
+    # Sustained load
+    - name: "Sustained load"
+      duration: 120
+      arrivalRate: 10
+
+    # Ramp up stress
+    - name: "Stress"
+      duration: 60
+      arrivalRate: 10
+      rampTo: 30
+
+    # Peak load
+    - name: "Peak"
+      duration: 60
+      arrivalRate: 30
+
+    # Cool down
+    - name: "Cool down"
+      duration: 30
+      arrivalRate: 30
+      rampTo: 1
+
+  # Variables
+  variables:
+    queries:
+      - "What is machine learning?"
+      - "Explain REST APIs."
+      - "How does caching work?"
+      - "What is eventual consistency?"
+      - "Describe microservices architecture."
+
+  # Plugins
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+
+  # Default headers
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Accept: "text/event-stream"
+
+  # Reporting
+  ensure:
+    p99: 5000           # 99th percentile under 5s
+    maxErrorRate: 10    # Max 10% errors
+
+scenarios:
+  # Scenario 1: Chat streaming
+  - name: "Chat Stream"
+    weight: 70  # 70% of traffic
+    flow:
+      - post:
+          url: "/api/v1/chat/stream"
+          name: "chat_stream"
+          json:
+            threadId: "artillery-{{ $uuid }}"
+            userId: "artillery-user-{{ $uuid }}"
+            agentType: "normal"
+            messages:
+              - role: "user"
+                content: "{{ $randomItem(queries) }}"
+          capture:
+            - json: "$.trace_id"
+              as: "traceId"
+
+      - think: 2  # Wait 2 seconds
+
+  # Scenario 2: Health checks
+  - name: "Health Check"
+    weight: 10  # 10% of traffic
+    flow:
+      - get:
+          url: "/api/v1/chat/status"
+          name: "health"
+
+  # Scenario 3: Thread operations
+  - name: "Thread Management"
+    weight: 20  # 20% of traffic
+    flow:
+      - get:
+          url: "/api/v1/chat/threads"
+          name: "list_threads"
+          headers:
+            X-User-Id: "artillery-user"
+
+      - think: 1

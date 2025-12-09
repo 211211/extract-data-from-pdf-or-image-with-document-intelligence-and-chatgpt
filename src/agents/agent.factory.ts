@@ -6,7 +6,15 @@ import { ModuleRef } from '@nestjs/core';
 /**
  * Supported agent types
  */
-export type AgentType = 'normal' | 'rag' | 'multi-agent' | 'planner' | 'researcher' | 'writer';
+export type AgentType =
+  | 'normal'
+  | 'rag'
+  | 'multi-agent'
+  | 'planner'
+  | 'parallel-search'
+  | 'result-ranker'
+  | 'researcher'
+  | 'writer';
 
 /**
  * Agent Factory

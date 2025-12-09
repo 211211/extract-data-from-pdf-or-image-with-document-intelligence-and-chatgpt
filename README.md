@@ -14,6 +14,9 @@ A production-ready **Enterprise ChatGPT-like Application** built with NestJS and
 - **Production Observability** - Structured logging with trace IDs, Prometheus metrics
 - **LLM Observability** - Langfuse integration (self-hosted MIT) for traces, generations, token usage
 - **Infrastructure as Code** - Complete Terraform setup for Azure deployment
+- **Multi-Provider LLM** - Flexible LLM backend (Azure OpenAI, local Ollama, Mock for testing)
+- **Document Conversion** - MarkItDown for Office docs (DOCX, XLSX, PPTX), Azure Document Intelligence for complex PDFs
+- **Smart Chunking** - Header-aware Markdown chunking with metadata preservation for RAG
 
 ## Architecture
 
@@ -106,6 +109,66 @@ yarn test
 # Build for production
 yarn build
 ```
+
+### Docker/Podman Development (Recommended)
+
+Run everything locally with containers - no global installation needed!
+
+```bash
+# Start all services (app, Ollama, Redis, Memcached)
+podman compose up -d
+# or
+docker compose up -d
+
+# Check status
+podman compose ps
+
+# View logs
+podman compose logs -f app
+
+# Stop all services
+podman compose down
+```
+
+### LLM Provider Switching
+
+Switch between LLM providers for different use cases:
+
+```bash
+# Check current provider
+yarn llm:status
+
+# Switch to mock (fast, for load testing - default)
+yarn llm:mock
+
+# Switch to local Ollama (realistic, slower)
+yarn llm:ollama
+
+# Switch to Azure OpenAI (production)
+yarn llm:azure
+```
+
+| Provider | Use Case | Performance |
+|----------|----------|-------------|
+| `mock` | Load testing, CI/CD | ~300ms p95, 0% errors |
+| `ollama` | Local development | ~25s avg (phi3:mini) |
+| `azure` | Production | Depends on Azure tier |
+
+### Document Conversion (Optional)
+
+Setup Python environment for MarkItDown document conversion:
+
+```bash
+# Setup Python virtual environment
+yarn setup:python
+
+# Verify installation
+.venv/bin/python scripts/markitdown_converter.py --check
+```
+
+**Recommended usage:**
+- **MarkItDown**: Office documents (DOCX, XLSX, PPTX), HTML, simple text files
+- **Azure Document Intelligence**: Complex PDFs, scanned documents, images with OCR
 
 ### API Endpoints
 
@@ -372,6 +435,10 @@ REDIS_URL=redis://localhost:6379
 - [x] Observability (structured logging, Prometheus metrics, trace IDs)
 - [x] Terraform infrastructure (multi-environment)
 - [x] Distributed stream abort (Redis Pub/Sub)
+- [x] Multi-provider LLM support (Azure OpenAI, Ollama, Mock)
+- [x] Header-aware Markdown chunking for RAG
+- [x] MarkItDown document conversion (DOCX, XLSX, PPTX)
+- [x] LLM timeout handling with graceful fallbacks
 - [ ] PostgreSQL + pgvector support
 - [ ] Document upload endpoint with per-user storage
 - [ ] Knowledge base management UI

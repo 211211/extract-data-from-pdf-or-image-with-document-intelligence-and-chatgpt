@@ -1216,13 +1216,418 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Search Operations",
+			"description": "Azure Cognitive Search endpoints for vector, semantic, and hybrid search",
+			"item": [
+				{
+					"name": "Semantic Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/semantic?query=What is NestJS?&top=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"semantic"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "What is NestJS?"
+								},
+								{
+									"key": "top",
+									"value": "5"
+								},
+								{
+									"key": "filter",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Semantic search using Azure Cognitive Search semantic ranking"
+					},
+					"response": []
+				},
+				{
+					"name": "Vector Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/vector?query=machine learning&k=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"vector"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "machine learning"
+								},
+								{
+									"key": "k",
+									"value": "10"
+								},
+								{
+									"key": "filter",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Vector similarity search using OpenAI embeddings"
+					},
+					"response": []
+				},
+				{
+					"name": "Hybrid Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/hybrid?query=React components&top=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"hybrid"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "React components"
+								},
+								{
+									"key": "top",
+									"value": "10"
+								},
+								{
+									"key": "filter",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Combined vector and semantic search with result fusion"
+					},
+					"response": []
+				},
+				{
+					"name": "Simple Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/simple?query=API",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"simple"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "API"
+								},
+								{
+									"key": "filter",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Basic keyword/term search"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"documents"
+							]
+						},
+						"description": "Retrieve all documents from the search index"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Embedding",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/embed?query=test embedding",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"embed"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "test embedding"
+								}
+							]
+						},
+						"description": "Generate embedding vector for a query string"
+					},
+					"response": []
+				},
+				{
+					"name": "Index Documents",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"documents\": [\n    {\n      \"id\": \"doc-001\",\n      \"pageContent\": \"This is a test document about artificial intelligence and machine learning.\",\n      \"user\": \"{{userId}}\",\n      \"chatThreadId\": \"test-thread\",\n      \"metadata\": \"ai-ml\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/search/index",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"index"
+							]
+						},
+						"description": "Index documents into Azure Cognitive Search"
+					},
+					"response": []
+				},
+				{
+					"name": "Seed Sample Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/seed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"seed"
+							]
+						},
+						"description": "Seed the index with sample documents for testing"
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/clear",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"clear"
+							]
+						},
+						"description": "Clear all documents from the search index (use with caution)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PDF Extractor",
+			"description": "Azure Document Intelligence endpoints for PDF and image text extraction",
+			"item": [
+				{
+					"name": "Extract from PDF (Full)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								},
+								{
+									"key": "modelId",
+									"value": "prebuilt-layout",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pdf-extractor/extract",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pdf-extractor",
+								"extract"
+							]
+						},
+						"description": "Extract text, tables, and structure from PDF using Document Intelligence"
+					},
+					"response": []
+				},
+				{
+					"name": "Extract Text Only",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pdf-extractor/extract-text",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pdf-extractor",
+								"extract-text"
+							]
+						},
+						"description": "Extract text content from PDF (prebuilt-read model)"
+					},
+					"response": []
+				},
+				{
+					"name": "Extract Tables",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pdf-extractor/extract-tables",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pdf-extractor",
+								"extract-tables"
+							]
+						},
+						"description": "Extract tables from PDF (prebuilt-layout model)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Available Models",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/pdf-extractor/models",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pdf-extractor",
+								"models"
+							]
+						},
+						"description": "List available Document Intelligence models"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Observability",
+			"description": "Monitoring and metrics endpoints",
+			"item": [
+				{
+					"name": "Prometheus Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"metrics"
+							]
+						},
+						"description": "Prometheus metrics endpoint for monitoring"
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:8083/api/v1",
-			"type": "string"
+			"type": "string",
+			"description": "Base URL with API prefix"
 		},
 		{
 			"key": "threadId",

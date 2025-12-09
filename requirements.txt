@@ -1,0 +1,12 @@
+# Microsoft MarkItDown - Document to Markdown converter
+# https://github.com/microsoft/markitdown
+markitdown>=0.0.1a3
+
+# Required by markitdown for Office file support
+olefile>=0.47
+
+# Optional: For better PDF text extraction (markitdown will use if available)
+# pdfminer.six>=20221105
+
+# Optional: For OCR support on images
+# pytesseract>=0.3.10

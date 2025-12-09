@@ -20,7 +20,13 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node src/scripts/seed-index.ts",
-    "clear-index": "ts-node src/scripts/clear-index.ts"
+    "clear-index": "ts-node src/scripts/clear-index.ts",
+    "setup:search": "ts-node src/scripts/setup-search-index.ts",
+    "setup:python": "./scripts/setup-python.sh",
+    "llm:status": "./scripts/switch-llm.sh status",
+    "llm:mock": "./scripts/switch-llm.sh mock",
+    "llm:ollama": "./scripts/switch-llm.sh ollama",
+    "llm:azure": "./scripts/switch-llm.sh azure"
   },
   "dependencies": {
     "@azure-rest/ai-document-intelligence": "^1.1.0",
@@ -42,7 +48,7 @@
     "class-validator": "^0.13.2",
     "form-data": "^4.0.0",
     "langfuse": "^3.38.6",
-    "openai": "^4.69.0",
+    "openai": "^6.10.0",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

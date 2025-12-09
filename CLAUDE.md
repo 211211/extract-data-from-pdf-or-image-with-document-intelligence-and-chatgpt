@@ -31,6 +31,15 @@ yarn format               # Prettier formatting
 # Search Index Management
 yarn seed                 # Seed Azure search index
 yarn clear-index          # Clear search index
+
+# LLM Provider Switching (for Docker/Podman)
+yarn llm:status           # Check current LLM provider
+yarn llm:mock             # Switch to mock (fast, for load testing)
+yarn llm:ollama           # Switch to local Ollama
+yarn llm:azure            # Switch to Azure OpenAI
+
+# Document Conversion (Python)
+yarn setup:python         # Setup Python venv with MarkItDown
 ```
 
 ## Architecture
@@ -135,10 +144,36 @@ Swagger UI available at `/swaggers`
 | **Azure Cognitive Search** | Vector + semantic search | HNSW algorithm, 3072-dim embeddings |
 | **Azure CosmosDB** | Chat persistence | Partition key `/userId`, single container with type discriminator |
 
+## LLM Provider Configuration
+
+The application supports multiple LLM providers for flexibility:
+
+| Provider | Use Case | Config |
+|----------|----------|--------|
+| `mock` | Load testing, CI/CD | Fast responses (50ms/token), no API costs |
+| `ollama` | Local development | Local LLM (phi3:mini), realistic but slower |
+| `azure` | Production | Azure OpenAI (GPT-5.1), requires API keys |
+
+```bash
+# Switch providers (Docker/Podman)
+yarn llm:mock             # For stress testing
+yarn llm:ollama           # For local dev
+yarn llm:azure            # For production
+
+# Or use environment variable
+LLM_PROVIDER=mock podman compose up -d --force-recreate app
+```
+
 ## Environment Variables
 
 Required in `.env`:
 ```
+# LLM Provider Selection
+LLM_PROVIDER=mock                    # mock | ollama | azure
+OLLAMA_URL=http://localhost:11434    # For ollama provider
+OLLAMA_MODEL=phi3:mini               # Local model name
+LLM_MOCK_DELAY_MS=50                 # Mock response delay
+
 # Azure OpenAI (Responses API)
 AZURE_OPENAI_API_INSTANCE_NAME=
 AZURE_OPENAI_API_KEY=

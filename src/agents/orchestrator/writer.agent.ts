@@ -101,8 +101,32 @@ Guidelines:
       prompt += `\n\nExecution Plan: ${this._plan.summary}`;
     }
 
-    if (this._findings && this._findings.findings.length > 0) {
-      prompt += `\n\nResearch Findings:\n${this._findings.findings.map((f) => `- ${f}`).join('\n')}`;
+    if (this._findings) {
+      // Handle extended findings from parallel search
+      if (this._findings.summary) {
+        prompt += `\n\nContext:\n${this._findings.summary}`;
+      }
+
+      // Handle document context
+      if (this._findings.documents && this._findings.documents.length > 0) {
+        prompt += `\n\nRelevant Documents:\n`;
+        for (const doc of this._findings.documents.slice(0, 5)) {
+          prompt += `\n**${doc.title}**\n${doc.content.substring(0, 500)}...\n`;
+        }
+      }
+
+      // Handle legacy findings format
+      if (this._findings.findings && this._findings.findings.length > 0) {
+        prompt += `\n\nResearch Findings:\n${this._findings.findings.map((f) => `- ${f}`).join('\n')}`;
+      }
+
+      // Handle citations
+      if (this._findings.citations && this._findings.citations.length > 0) {
+        prompt += `\n\nAvailable Citations (use when relevant):\n`;
+        for (const citation of this._findings.citations.slice(0, 5)) {
+          prompt += `- ${citation.title}${citation.source ? ` (${citation.source})` : ''}\n`;
+        }
+      }
     }
 
     return prompt;

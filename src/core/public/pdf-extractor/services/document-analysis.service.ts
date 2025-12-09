@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException, Optional } from '@nestjs/common';
 import {
   DocumentIntelligenceClient,
   isUnexpected,
@@ -14,9 +14,19 @@ export class DocumentAnalysisService implements IDocumentAnalysisService {
   private readonly logger = new Logger(DocumentAnalysisService.name);
 
   constructor(
+    @Optional()
     @Inject('DocumentIntelligenceClient')
-    private readonly documentIntelligenceClient: DocumentIntelligenceClient,
+    private readonly documentIntelligenceClient: DocumentIntelligenceClient | null,
   ) {}
+
+  private ensureClientAvailable(): DocumentIntelligenceClient {
+    if (!this.documentIntelligenceClient) {
+      throw new BadRequestException(
+        'Document Intelligence is not configured. Set AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and AZURE_DOCUMENT_INTELLIGENCE_KEY environment variables.',
+      );
+    }
+    return this.documentIntelligenceClient;
+  }
 
   /**
    * Analyzes a document (PDF or image) using Azure Document Intelligence.
@@ -66,15 +76,14 @@ export class DocumentAnalysisService implements IDocumentAnalysisService {
 
       // Send the request to analyze the document
       this.logger.log(`Using model: ${config.modelId} for analysis`);
-      const initialResponse = await this.documentIntelligenceClient
-        .path('/documentModels/{modelId}:analyze', config.modelId)
-        .post({
-          contentType: 'application/json',
-          body: {
-            base64Source,
-          },
-          queryParameters,
-        });
+      const client = this.ensureClientAvailable();
+      const initialResponse = await client.path('/documentModels/{modelId}:analyze', config.modelId).post({
+        contentType: 'application/json',
+        body: {
+          base64Source,
+        },
+        queryParameters,
+      });
 
       // Check if the response is unexpected (error)
       if (isUnexpected(initialResponse)) {
@@ -84,7 +93,7 @@ export class DocumentAnalysisService implements IDocumentAnalysisService {
       }
 
       // Use the poller to handle the long-running operation
-      const poller = getLongRunningPoller(this.documentIntelligenceClient, initialResponse);
+      const poller = getLongRunningPoller(client, initialResponse);
       const result = (await poller.pollUntilDone()).body as AnalyzeOperationOutput;
 
       // Process and log extracted content
