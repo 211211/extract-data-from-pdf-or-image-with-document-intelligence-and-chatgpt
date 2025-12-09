@@ -1,0 +1,1269 @@
+{
+	"info": {
+		"_postman_id": "d64bf2de-5569-4ab6-90dd-debbfc106c81",
+		"name": "Multi-Turn LLM Chat API",
+		"description": "Test collection for the streaming multi-turn LLM chat application.\n\nNote: Thread IDs use UUID v7 format for time-sortable, unique identifiers.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19431616"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "API Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Available Agents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/chat/agents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"agents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/chat/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Basic Chat - Normal Agent",
+			"item": [
+				{
+					"name": "Simple Greeting",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Hello! How are you today?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						},
+						"description": "Test basic greeting with normal agent"
+					},
+					"response": []
+				},
+				{
+					"name": "Technical Question",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Explain the difference between REST and GraphQL APIs.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Code Generation Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Write a TypeScript function that validates an email address using regex.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Multi-Turn Conversations",
+			"description": "Use the same threadId across turns to test context retention. Copy the threadId from Turn 1 response for subsequent turns.",
+			"item": [
+				{
+					"name": "Turn 1 - Introduce Context",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate a UUID v7-like ID for this conversation",
+									"const timestamp = Date.now().toString(16).padStart(12, '0');",
+									"const random = Math.random().toString(16).substring(2, 14);",
+									"const threadId = `${timestamp.slice(0,8)}-${timestamp.slice(8,12)}-7${random.slice(0,3)}-${random.slice(3,7)}-${random.slice(7,19).padEnd(12, '0')}`;",
+									"pm.collectionVariables.set('multiTurnThreadId', threadId);",
+									"pm.collectionVariables.set('multiTurnMsgId1', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{multiTurnThreadId}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{multiTurnMsgId1}}\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Turn 2 - Follow-up Question",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('multiTurnMsgId2', pm.variables.replaceIn('{{$guid}}'));",
+									"pm.collectionVariables.set('multiTurnMsgId3', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{multiTurnThreadId}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{multiTurnMsgId1}}\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId2}}\",\n      \"role\": \"assistant\",\n      \"content\": \"Great! Building an e-commerce application is an exciting project. For a React + Node.js stack, I'd recommend a microservices architecture. Here's a high-level overview: Frontend with React, Backend API with Express/NestJS, Database with PostgreSQL or MongoDB, and services for authentication, product catalog, cart, and payment processing. Would you like me to elaborate on any specific component?\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId3}}\",\n      \"role\": \"user\",\n      \"content\": \"Yes, tell me more about the payment processing service. What technologies should I use?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Turn 3 - Deep Dive",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('multiTurnMsgId4', pm.variables.replaceIn('{{$guid}}'));",
+									"pm.collectionVariables.set('multiTurnMsgId5', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{multiTurnThreadId}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"messages\": [\n    {\n      \"id\": \"{{multiTurnMsgId1}}\",\n      \"role\": \"user\",\n      \"content\": \"I'm building an e-commerce application using React and Node.js. I need help with the architecture.\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId2}}\",\n      \"role\": \"assistant\",\n      \"content\": \"Great! Building an e-commerce application is an exciting project. For a React + Node.js stack, I'd recommend a microservices architecture...\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId3}}\",\n      \"role\": \"user\",\n      \"content\": \"Yes, tell me more about the payment processing service. What technologies should I use?\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId4}}\",\n      \"role\": \"assistant\",\n      \"content\": \"For payment processing in your Node.js e-commerce application, I recommend using Stripe. Here's why and how...\"\n    },\n    {\n      \"id\": \"{{multiTurnMsgId5}}\",\n      \"role\": \"user\",\n      \"content\": \"Can you show me a code example for implementing Stripe webhooks?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RAG Agent Tests",
+			"item": [
+				{
+					"name": "Document Query",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"rag\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"What is our company's policy on remote work?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						},
+						"description": "Test RAG agent with document retrieval"
+					},
+					"response": []
+				},
+				{
+					"name": "RAG Multi-Turn with Citations",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"rag\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"What benefits do we offer to employees?\"\n    },\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"assistant\",\n      \"content\": \"Based on our benefits policy document, we offer health insurance, 401k matching, and PTO...\"\n    },\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Tell me more about the health insurance options.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Multi-Agent Tests",
+			"item": [
+				{
+					"name": "Complex Research Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"multi-agent\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Research the current trends in AI and machine learning, and write me a comprehensive executive summary with recommendations for how our company should adopt these technologies.\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						},
+						"description": "Tests full multi-agent pipeline: Planner -> Researcher -> Writer"
+					},
+					"response": []
+				},
+				{
+					"name": "Analysis and Report Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"multi-agent\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Analyze the pros and cons of microservices vs monolithic architecture, and provide a detailed recommendation for a startup with 5 developers.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Conversation Styles",
+			"item": [
+				{
+					"name": "Creative Style",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"creative\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Precise Style",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"precise\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Balanced Style (Default)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"conversationStyle\": \"balanced\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Describe a futuristic city in the year 2150.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Thread Management",
+			"item": [
+				{
+					"name": "List User Threads",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads?userId={{userId}}&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "{{userId}}"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "continuationToken",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "isBookmarked",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Thread Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Thread",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Thread Title\",\n  \"metadata\": {\n    \"customField\": \"custom value\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Bookmark",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/bookmark",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"bookmark"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Thread",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Thread",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/restore",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"restore"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hard Delete Thread",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/permanent",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"permanent"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Message Operations",
+			"item": [
+				{
+					"name": "Get Thread Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/messages?limit=30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "30"
+								},
+								{
+									"key": "continuationToken",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Message",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/messages/last",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"messages",
+								"last"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Message Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}/messages/count",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}",
+								"messages",
+								"count"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stream Management",
+			"item": [
+				{
+					"name": "Stop Stream",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{threadId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stop",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Cases",
+			"item": [
+				{
+					"name": "Missing Required Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						},
+						"description": "Should return 400 with validation errors"
+					},
+					"response": []
+				},
+				{
+					"name": "Empty Messages Array",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"messages\": []\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Message Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"invalid_role\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Agent Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"nonexistent-agent\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Max Tokens Out of Range",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"maxTokens\": 99999,\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Temperature Out of Range",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"temperature\": 2.5,\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Test\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Thread Not Found",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/non-existent-thread-id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"non-existent-thread-id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forbidden - Wrong User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "wrong-user-id"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat/threads/{{threadId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"threads",
+								"{{threadId}}"
+							]
+						},
+						"description": "Should return 403 Forbidden when accessing another user's thread"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Advanced Parameters",
+			"item": [
+				{
+					"name": "Custom System Prompt",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"systemPrompt\": \"You are a pirate captain. Respond to all questions in pirate speak, using 'Arrr' and nautical terms.\",\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"What's the weather like today?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Low Temperature (Deterministic)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"temperature\": 0.1,\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"What is 2 + 2?\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "High Temperature (Creative)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"temperature\": 0.9,\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Write a creative opening line for a novel.\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Limited Max Tokens",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "text/event-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threadId\": \"{{$guid}}\",\n  \"userId\": \"{{userId}}\",\n  \"agentType\": \"normal\",\n  \"maxTokens\": 50,\n  \"messages\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"role\": \"user\",\n      \"content\": \"Write a long essay about the history of computing.\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/stream",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat",
+								"stream"
+							]
+						},
+						"description": "Response should be truncated to ~50 tokens"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8083/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "threadId",
+			"value": "",
+			"type": "string",
+			"description": "Set this to a valid thread ID from your tests"
+		},
+		{
+			"key": "userId",
+			"value": "test-user-001",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnThreadId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnMsgId1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnMsgId2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnMsgId3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnMsgId4",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "multiTurnMsgId5",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

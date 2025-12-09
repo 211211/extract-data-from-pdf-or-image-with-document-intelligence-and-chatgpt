@@ -25,7 +25,7 @@
 //   }
 // }
 
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
 import { ICompletionService } from '../interfaces/completion.interface';
 import { textPrompt } from '../prompt';
 import { isUnexpected, ModelClient } from '@azure-rest/ai-inference';
@@ -34,9 +34,14 @@ import { isUnexpected, ModelClient } from '@azure-rest/ai-inference';
 export class CompletionService implements ICompletionService {
   private readonly logger = new Logger(CompletionService.name);
 
-  constructor(@Inject('ModelClient') private readonly aiClient: ModelClient) {}
+  constructor(@Optional() @Inject('ModelClient') private readonly aiClient: ModelClient | null) {}
 
   async chatCompletion(analysisResult: any): Promise<string> {
+    if (!this.aiClient) {
+      this.logger.warn('Grok provider is disabled - returning raw analysis result');
+      return JSON.stringify(analysisResult);
+    }
+
     try {
       this.logger.log('Initiating chat completion with Grok');
       const response = await this.aiClient.path('/chat/completions').post({

@@ -1,3 +1,7 @@
+// Load .env file FIRST, overriding any existing environment variables
+import * as dotenv from 'dotenv';
+dotenv.config({ override: true });
+
 import * as bodyParser from 'body-parser';
 
 import AppConfig, { CONFIG_APP } from './config/app';

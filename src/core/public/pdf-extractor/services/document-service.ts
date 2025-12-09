@@ -5,12 +5,11 @@ import { AzureAISearchInstance } from './ai-search';
 import { DocumentIntelligenceInstance } from '../providers';
 import { chunkDocumentWithOverlap } from './text-chunk';
 import { createHash } from 'node:crypto';
-import { customAlphabet } from 'nanoid';
+import { v7 as uuidv7 } from 'uuid';
 
 export const uniqueId = () => {
-  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  const nanoid = customAlphabet(alphabet, 36);
-  return nanoid();
+  // Generate a UUID v7 (time-sortable) and remove hyphens for a 32-char alphanumeric ID
+  return uuidv7().replace(/-/g, '');
 };
 
 export const hashValue = (value: string): string => {

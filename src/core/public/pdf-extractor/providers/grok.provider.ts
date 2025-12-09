@@ -2,9 +2,17 @@ import { AzureKeyCredential } from '@azure/core-auth';
 import ModelClient from '@azure-rest/ai-inference';
 
 export const Grok3Instance = () => {
-  const endpoint = process.env.AZURE_AI_FOUNDRY_BASE_URL!;
-  const apiKey = process.env.AZURE_AI_FOUNDRY_API_KEY!;
-  const apiVersion = process.env.AZURE_AI_FOUNDRY_API_VERSION!;
+  const endpoint = process.env.AZURE_AI_FOUNDRY_BASE_URL;
+  const apiKey = process.env.AZURE_AI_FOUNDRY_API_KEY;
+  const apiVersion = process.env.AZURE_AI_FOUNDRY_API_VERSION;
+
+  // Return null if Grok is not configured (API key is missing)
+  if (!apiKey || !endpoint) {
+    console.log(
+      '[Grok3Instance] Grok provider disabled - AZURE_AI_FOUNDRY_API_KEY or AZURE_AI_FOUNDRY_BASE_URL not set',
+    );
+    return null;
+  }
 
   const client = ModelClient(endpoint, new AzureKeyCredential(apiKey), {
     apiVersion: apiVersion,
