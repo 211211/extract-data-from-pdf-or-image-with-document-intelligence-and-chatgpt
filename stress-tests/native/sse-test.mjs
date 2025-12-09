@@ -69,7 +69,7 @@ function createSSEStream(streamId) {
       let buffer = '';
       let firstTokenReceived = false;
 
-      if (res.statusCode !== 200) {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
         result.error = `HTTP ${res.statusCode}`;
         resolve(result);
         return;
@@ -154,7 +154,7 @@ async function runSSETest() {
   // Health check
   console.log('\n🏥 Checking health...');
   try {
-    const health = await fetch(`${TARGET}/health`);
+    const health = await fetch(`${TARGET}/api/v1/chat/status`);
     if (!health.ok) throw new Error(`Status ${health.status}`);
     console.log('✅ Server is healthy\n');
   } catch (err) {

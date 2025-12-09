@@ -116,19 +116,57 @@ Run everything locally with containers - no global installation needed!
 
 ```bash
 # Start all services (app, Ollama, Redis, Memcached)
-podman compose up -d
-# or
-docker compose up -d
+./scripts/dev.sh start
 
 # Check status
-podman compose ps
+./scripts/dev.sh status
 
 # View logs
-podman compose logs -f app
+./scripts/dev.sh logs
 
 # Stop all services
-podman compose down
+./scripts/dev.sh stop
+
+# Show all available commands
+./scripts/dev.sh help
 ```
+
+#### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `./scripts/dev.sh start` | Start app + Ollama + Redis + Memcached |
+| `./scripts/dev.sh stop` | Stop all services |
+| `./scripts/dev.sh status` | Show running containers |
+| `./scripts/dev.sh logs [service]` | Follow logs (default: app) |
+| `./scripts/dev.sh shell [service]` | Open shell in container |
+| `./scripts/dev.sh init-ollama [model]` | Download LLM model (default: phi3:mini) |
+| `./scripts/dev.sh ollama-list` | List downloaded models |
+| `./scripts/dev.sh test-llm` | Test LLM connection |
+| `./scripts/dev.sh observability` | Start Langfuse + Prometheus + Grafana |
+| `./scripts/dev.sh observability-stop` | Stop monitoring stack |
+| `./scripts/dev.sh clean` | Remove all containers and volumes |
+
+### Observability Stack
+
+Start monitoring with Langfuse (LLM tracing), Prometheus (metrics), and Grafana (dashboards):
+
+```bash
+# Start observability stack
+./scripts/dev.sh observability
+
+# Stop observability stack
+./scripts/dev.sh observability-stop
+
+# View observability logs
+./scripts/dev.sh observability-logs langfuse
+```
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Langfuse | http://localhost:3000 | Create account on first visit |
+| Prometheus | http://localhost:9090 | - |
+| Grafana | http://localhost:3001 | admin / admin |
 
 ### LLM Provider Switching
 
@@ -153,6 +191,29 @@ yarn llm:azure
 | `mock` | Load testing, CI/CD | ~300ms p95, 0% errors |
 | `ollama` | Local development | ~25s avg (phi3:mini) |
 | `azure` | Production | Depends on Azure tier |
+
+### Stress Testing
+
+Run performance and load tests:
+
+```bash
+# Quick smoke test (1 VU, 30s)
+./scripts/stress-test.sh smoke
+
+# Normal load test (10 VUs, 60s)
+./scripts/stress-test.sh load
+
+# Push limits (50 VUs, 120s)
+./scripts/stress-test.sh stress
+
+# Sudden traffic spike (100 VUs, 30s)
+./scripts/stress-test.sh spike
+
+# SSE streaming test
+./scripts/stress-test.sh sse
+```
+
+The stress test runner auto-detects available tools (k6 > Artillery > native Node.js).
 
 ### Document Conversion (Optional)
 
@@ -383,6 +444,11 @@ yarn test:cov
 
 # Run specific test file
 yarn test chat.service.spec.ts
+
+# Stress testing (requires running server)
+./scripts/stress-test.sh smoke    # Quick smoke test
+./scripts/stress-test.sh load     # Normal load test
+./scripts/stress-test.sh stress   # Push limits
 ```
 
 ## Environment Variables
